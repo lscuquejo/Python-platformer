@@ -24,21 +24,6 @@ black_image = pygame.image.load('black.png')
 
 TILE_SIZE = black_image.get_width()
 
-
-# game_map = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-#             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-#             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-#             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-#             ['0','0','0','0','0','0','0','2','2','2','2','2','0','0','0','0','0','0','0'],
-#             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
-#             ['2','2','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','2','2'],
-#             ['1','1','2','2','2','2','2','2','2','2','2','2','2','2','2','2','2','1','1'],
-#             ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-#             ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-#             ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-#             ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1'],
-#             ['1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1','1']]
-
 game_map = [['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
             ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'],
@@ -85,8 +70,8 @@ def move(rect, movement, tiles):
 moving_right = False
 moving_left = False
 
-player_location = [50,50]
 player_y_momentum = 0
+air_timer = 0
 
 player_rect = pygame.Rect(50, 50, player_image.get_width(), player_image.get_height())
 test_rect = pygame.Rect(50,50,100, 50)
@@ -132,18 +117,20 @@ while True: #game loop
     if player_y_momentum > 3 :
         player_y_momentum = 3
     
-    # player_rect, collision_types = move(player_rect, player_movement, tile_rects)
     player_rect, collisions = move(player_rect, player_movement, tile_rects)
 
+    # Remove momentum if player colides with a obeject ground
+    if collisions['bottom']:
+        player_y_momentum = 0
+        air_timer = 0
+    else:
+        air_timer += 1
+
+    # Remove momentum if player colides with a obeject above him
+    if collisions['top']:
+        player_y_momentum = 0
+    
     display.blit(player_image, (player_rect.x, player_rect.y))
-
-    # if moving_right == True:
-    #     player_location[0] += 4
-    # if moving_left == True:
-    #     player_location[0] -= 4
-
-    # player_rect.x = player_location[0]
-    # player_rect.y = player_location[1]
 
     for event in pygame.event.get():
 
@@ -155,6 +142,9 @@ while True: #game loop
                 moving_right = True
             if event.key == K_LEFT:
                 moving_left = True
+            if event.key == K_UP:
+                if air_timer < 6:
+                    player_y_momentum = -5
         if event.type == KEYUP:
             if event.key == K_RIGHT:
                 moving_right = False
